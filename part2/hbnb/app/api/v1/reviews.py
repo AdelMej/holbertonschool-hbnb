@@ -1,4 +1,6 @@
+from decimal import InvalidContext
 from flask_restx import Namespace, Resource, fields
+from app.models import review
 from app.services import facade
 
 api = Namespace('reviews', description='Reviews operations')
@@ -15,7 +17,7 @@ review_model = api.model('Review', {
 
 @api.route('/')
 class ReviewList(Resource):
-    @api.expect(review_model)
+    @api.expect(review_model, required=True)
     @api.response(201, 'Review successfully created')
     @api.response(400, 'Invalid input data')
     def post(self):
@@ -35,6 +37,12 @@ class ReviewList(Resource):
             return {'error': 'Place not found'}, 404
 
         review_data["place"] = existing_place
+
+        if review_data["title"] == "":
+            return {'error': 'Invalid input data'}, 400
+
+        if len(review_data['text']) > 500:
+            return {'error': 'Invalid input data'}, 400
 
         try:
             new_review = facade.create_review(review_data)
@@ -90,7 +98,7 @@ class ReviewResource(Resource):
             'place_id': review.place_id
         }, 200
 
-    @api.expect(review_model)
+    @api.expect(review_model, required=True)
     @api.response(200, 'Review updated successfully')
     @api.response(404, 'Review not found')
     @api.response(400, 'Invalid input data')
@@ -102,9 +110,31 @@ class ReviewResource(Resource):
         review = facade.get_review(review_id)
         if not review:
             return {'error': 'Review not found'}, 404
-        updated_review = facade.update_review(review_id, review_data)
-        if not updated_review:
+
+        existing_user = facade.get_user(review_data["user_id"])
+        if not existing_user:
+            return {'error': 'User not found'}, 404
+
+        review_data["user"] = existing_user
+
+        existing_place = facade.get_place(review_data["place_id"])
+        if not existing_place:
+            return {'error': 'Place not found'}, 404
+
+        review_data["place"] = existing_place
+
+        if review_data["title"] == "":
             return {'error': 'Invalid input data'}, 400
+
+        if len(review_data['text']) > 500:
+            return {'error': 'Invalid input data'}, 400
+        try :
+            updated_review = facade.update_review(review_id, review_data)
+            if not updated_review:
+                return {'error': 'Invalid input data'}, 400
+        except ValueError:
+            return {"error": "Invalid input data"}, 400
+
         return {'message': 'Review updated successfully'}, 200
 
     @api.response(204, 'Review deleted successfully')
@@ -117,4 +147,4 @@ class ReviewResource(Resource):
         if not review:
             return {'error': 'Review not found'}, 404
         facade.delete_review(review_id)
-        return {'message': 'Review deleted successfully'}, 204
+        return {}, 204
