@@ -128,6 +128,7 @@ class ReviewResource(Resource):
 
         if len(review_data['text']) > 500:
             return {'error': 'Invalid input data'}, 400
+
         try :
             updated_review = facade.update_review(review_id, review_data)
             if not updated_review:
