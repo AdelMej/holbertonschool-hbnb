@@ -8,6 +8,7 @@ from app.api.v1.users import api as users_ns
 from app.api.v1.amenities import api as amenities_ns
 from app.api.v1.reviews import api as reviews_ns
 from app.api.v1.auth import api as auth_ns
+from app.api.v1.register import api as register_ns
 
 authorizations = {
     'Bearer': {
@@ -17,6 +18,7 @@ authorizations = {
         'description': "Entrer le token JWT comme : Bearer <votre_token>"
     }
 }
+
 
 def create_app(config_class="config.DevelopmentConfig"):
     app = Flask(__name__)
@@ -32,7 +34,10 @@ def create_app(config_class="config.DevelopmentConfig"):
 
     CORS(app, resources={
         r"/*": {
-            "origins": ["http://localhost:5000", "http://127.0.0.1:5000"],
+            "origins": ["http://localhost:5000",
+                        "http://127.0.0.1:5000",
+                        "http://127.0.0.1:8000"
+                        ],
             "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
             "allow_headers": ["Content-Type", "Authorization"]
         }
@@ -46,6 +51,7 @@ def create_app(config_class="config.DevelopmentConfig"):
     api.add_namespace(amenities_ns, path='/api/v1/amenities')
     api.add_namespace(reviews_ns, path='/api/v1/reviews')
     api.add_namespace(auth_ns, path="/api/v1/auth")
+    api.add_namespace(register_ns, path="/api/v1/register")
 
     with app.app_context():
         from app.models import user, place, amenity, review

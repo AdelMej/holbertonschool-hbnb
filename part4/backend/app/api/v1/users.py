@@ -1,6 +1,8 @@
 from flask_restx import Namespace, Resource, fields
 from app.services import facade
-from flask_jwt_extended import jwt_required, get_jwt, get_jwt_identity
+from flask_jwt_extended import jwt_required, get_jwt
+from app.utils.password_validator import verify_password
+import validators
 
 api = Namespace('users', description='User operations')
 
@@ -22,7 +24,7 @@ user_model = api.model('User', {
         required=True,
         description='Email of the user'
     ),
-    'password':fields.String(
+    'password': fields.String(
         required=True,
         description='The password of the user'
     )
@@ -34,10 +36,13 @@ class UserList(Resource):
     """
     User Registration and Listing Endpoint
     """
+    @api.doc(security='Bearer')
     @api.expect(user_model, validate=True)
     @api.response(201, 'User successfully created')
     @api.response(400, 'Email already registered')
     @api.response(400, 'Invalid input data')
+    @api.response(400, 'Invalid email')
+    @api.response(400, 'password info')
     @api.doc(description="Register a new user")
     @jwt_required()
     def post(self):
@@ -61,12 +66,13 @@ class UserList(Resource):
         ):
             return {'error': 'Invalid input data'}, 400
 
-        # verify email format (simple check)
-        if (
-            user_data['email'].count('@') != 1
-            or '.' not in user_data['email'].split('@')[1]
-        ):
-            return {'error': 'Invalid input data'}, 400
+        # verify email format
+        if not validators.email(user_data['email']):
+            return {'error': 'Invalid email'}, 400
+
+        success, message = verify_password(user_data["password"])
+        if not success:
+            return {'error': message}, 400
 
         new_user = facade.create_user(user_data)
         return {
@@ -89,6 +95,7 @@ class UserUpdateAndFetch(Resource):
     """
     user Update Endpoint
     """
+    @api.doc(security='Bearer')
     @api.expect(user_model, validate=True)
     @api.response(200, 'User successfully updated')
     @api.response(404, 'User not found')
@@ -108,8 +115,8 @@ class UserUpdateAndFetch(Resource):
             is not found or input data is invalid.
         """
         # Verify user exists
-        current_user = get_jwt_identity()
-        if not current_user.get('is_admin'):
+        claims = get_jwt()
+        if not claims.get('is_admin'):
             return {'error': 'Admin privileges required'}, 403
 
         user = facade.get_user(user_id)

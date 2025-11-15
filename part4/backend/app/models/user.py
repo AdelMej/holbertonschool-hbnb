@@ -36,20 +36,6 @@ class User(BaseModel):
         """Verifies if the provided password matches the hashed password."""
         return bcrypt.check_password_hash(self.password, password)
 
-    def update(self, data: dict):
-        """Update user attributes with provided data."""
-        allowed_fields = {'email', 'first_name', 'last_name', 'password', 'is_admin'}
-        for field, value in data.items():
-            if field not in allowed_fields:
-                continue
-
-            if field == 'password' and value:
-                self.hash_password(value)
-            elif field in {'first_name', 'last_name'}:
-                setattr(self, field, value.strip())
-            else:
-                setattr(self, field, value)
-
     @validates("email")
     def validate_email(self, key, value):
         if not value:

@@ -45,6 +45,7 @@ place_model = api.model("Place", {
 
 @api.route('/')
 class PlaceList(Resource):
+    @api.doc(security='Bearer')
     @api.expect(place_model, validate=True)
     @api.response(201, 'Place successfully created')
     @api.response(400, 'Invalid input data')
@@ -156,6 +157,7 @@ class PlaceResource(Resource):
             'amenities': amenities
         }, 200
 
+    @api.doc(security='Bearer')
     @api.expect(place_model, validate=True)
     @api.response(200, 'Place updated successfully')
     @api.response(404, 'Place not found')
@@ -164,7 +166,7 @@ class PlaceResource(Resource):
     def put(self, place_id):
         """Update a place's information"""
         place_data = api.payload
-    
+
         current_user = get_jwt_identity()
         claims = get_jwt()
         # Set is_admin default to False if not exists

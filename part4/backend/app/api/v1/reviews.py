@@ -1,6 +1,6 @@
 from flask_restx import Namespace, Resource, fields
 from app.services import facade
-from flask_jwt_extended import jwt_required, get_jwt_identity
+from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt
 
 api = Namespace('reviews', description='Reviews operations')
 
@@ -16,6 +16,7 @@ review_model = api.model('Review', {
 
 @api.route('/')
 class ReviewList(Resource):
+    @api.doc(security='Bearer')
     @api.expect(review_model)
     @api.response(201, 'Review successfully created')
     @api.response(400, 'Invalid input data')
@@ -27,7 +28,8 @@ class ReviewList(Resource):
         review_data = api.payload
         current_user = get_jwt_identity()
 
-        review_data["user_id"] = current_user
+        if current_user != review_data["user_id"]:
+            return {'error': 'Unauthorized action'}, 403
 
         existing_user = facade.get_user(review_data["user_id"])
         if not existing_user:
@@ -97,6 +99,7 @@ class ReviewResource(Resource):
             'place_id': review.place_id
         }, 200
 
+    @api.doc(security='Bearer')
     @api.expect(review_model)
     @api.response(200, 'Review updated successfully')
     @api.response(404, 'Review not found')
@@ -108,13 +111,14 @@ class ReviewResource(Resource):
         """
         review_data = api.payload
         current_user = get_jwt_identity()
+        claims = get_jwt()
 
-        review_data["user_id"] = current_user["id"]
+        review_data["user_id"] = current_user
         review = facade.get_review(review_id)
         if not review:
             return {'error': 'Review not found'}, 404
 
-        if review.user_id != current_user["id"] and not current_user["is_admin"]:
+        if review.user_id != current_user and not claims.get("is_admin"):
             return {'error': 'Unauthorized action'}, 403
 
         updated_review = facade.update_review(review_id, review_data)
@@ -122,7 +126,8 @@ class ReviewResource(Resource):
             return {'error': 'Invalid input data'}, 400
         return {'message': 'Review updated successfully'}, 200
 
-    @api.response(204, 'Review deleted successfully')
+    @api.doc(security='Bearer')
+    @api.response(204, '')
     @api.response(404, 'Review not found')
     @jwt_required()
     def delete(self, review_id):
@@ -130,13 +135,14 @@ class ReviewResource(Resource):
         Delete a review
         """
         current_user = get_jwt_identity()
+        claims = get_jwt()
 
         review = facade.get_review(review_id)
         if not review:
             return {'error': 'Review not found'}, 404
 
-        if review.user_id != current_user["id"] and not current_user["is_admin"]:
+        if review.user_id != current_user and not claims.get("is_admin"):
             return {'error': 'Unauthorized action'}, 403
 
         facade.delete_review(review_id)
-        return {'message': 'Review deleted successfully'}, 204
+        return {}, 204

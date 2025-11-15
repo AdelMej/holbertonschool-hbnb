@@ -30,6 +30,7 @@ class AmenityList(Resource):
     """
     Class Amenity Registration and Listing Endpoint
     """
+    @api.doc(security='Bearer')
     @api.expect(amenity_model)
     @api.response(201, 'Amenity successfully created')
     @api.response(400, 'Invalid input data')
@@ -94,6 +95,7 @@ class AmenityResource(Resource):
             "name": amenity.name
         }, 200
 
+    @api.doc(security='Bearer')
     @api.expect(amenity_model)
     @api.response(200, 'Amenity updated successfully')
     @api.response(404, 'Amenity not found')
