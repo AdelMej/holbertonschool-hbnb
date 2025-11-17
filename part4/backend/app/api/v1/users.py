@@ -82,9 +82,9 @@ class UserList(Resource):
             'email': new_user.email
         }, 201
 
+    @api.doc(security='Bearer')
     @api.response(200, 'Success')
     @api.doc(description="Get list of users")
-    @api.marshal_list_with(user_model)
     @jwt_required()
     def get(self):
         """get list of users"""
@@ -93,7 +93,20 @@ class UserList(Resource):
         if not claims.get("is_admin"):
             return {'error': 'Admin privileges required'}, 403
 
-        return facade.get_all_users(), 200
+        users = facade.get_all_users()
+        result = [{
+                'id': u.id,
+                'first_name': u.first_name,
+                'last_name': u.last_name,
+                'email': u.email
+            }
+            for u in users
+        ]
+
+        if not result:
+            return {'error': 'Users not found'}, 404
+
+        return result, 200
 
 
 @api.route('/<string:user_id>')
