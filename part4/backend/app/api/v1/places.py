@@ -53,7 +53,6 @@ place_model_update = api.model("Place", {
 })
 
 
-
 @api.route('/')
 class PlaceList(Resource):
     @api.doc(security='Bearer')
@@ -186,16 +185,11 @@ class PlaceResource(Resource):
 
         place = facade.get_place(place_id)
 
-
         if not place:
             return {"error": "Place not found"}, 404
 
         if not is_admin and place.owner_id != user_id:
             return {'error': 'Unauthorized action'}, 403
-
-        owner = facade.get_user(place_data["owner_id"])
-        if not owner:
-            return {"error": "User not found"}, 404
 
         if place_data["title"] == "":
             return {"error": "Invalid input data"}, 400
@@ -230,6 +224,7 @@ class PlaceResource(Resource):
         facade.update_place(place_id, place_data)
 
         return {"message": "Place updated successfully"}, 200
+
 
 @api.route("/<place_id>/reviews")
 class PlaceReviewList(Resource):
