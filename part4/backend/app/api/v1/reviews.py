@@ -13,11 +13,17 @@ review_model = api.model('Review', {
     'place_id': fields.String(required=True, description='ID of the place')
 })
 
+review_model_update = api.model('Review', {
+    'title': fields.String(required=True, description='Title of the review'),
+    'text': fields.String(required=True, description='Text of the review'),
+    'rating': fields.Integer(required=True, description='Rating of the place (1-5)'),
+})
+
 
 @api.route('/')
 class ReviewList(Resource):
     @api.doc(security='Bearer')
-    @api.expect(review_model)
+    @api.expect(review_model, verify=True)
     @api.response(201, 'Review successfully created')
     @api.response(400, 'Invalid input data')
     @jwt_required()
@@ -100,7 +106,7 @@ class ReviewResource(Resource):
         }, 200
 
     @api.doc(security='Bearer')
-    @api.expect(review_model)
+    @api.expect(review_model_update, verify=True)
     @api.response(200, 'Review updated successfully')
     @api.response(404, 'Review not found')
     @api.response(400, 'Invalid input data')

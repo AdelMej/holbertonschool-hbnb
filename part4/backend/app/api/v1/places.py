@@ -33,9 +33,20 @@ place_model = api.model("Place", {
     'latitude': fields.Float(required=True, description='Latitude of the place'),
     'longitude': fields.Float(required=True, description='Longitude of the place'),
     'owner_id': fields.String(required=True, description='ID of the owner'),
-    # 'owner': fields.Nested(user_model, description='Owner of the place'),
     'amenities': fields.List(fields.String(description="Id of amenity"), required=True, description='List of amenities'),
-    # 'reviews': fields.List(fields.Nested(review_model), description='List of reviews')
+    'rooms': fields.Integer(required=True, description='rooms'),
+    'surface': fields.Float(required=True, description='surface'),
+    'capacity': fields.Integer(required=True, description='capacity'),
+})
+
+# Define the place model for input validation and documentation
+place_model_update = api.model("Place", {
+    'title': fields.String(required=True, description='Title of the place'),
+    'description': fields.String(required=True, description='Description of the place'),
+    'price': fields.Float(required=True, description='Price per night'),
+    'latitude': fields.Float(required=True, description='Latitude of the place'),
+    'longitude': fields.Float(required=True, description='Longitude of the place'),
+    'amenities': fields.List(fields.String(description="Id of amenity"), required=True, description='List of amenities'),
     'rooms': fields.Integer(required=True, description='rooms'),
     'surface': fields.Float(required=True, description='surface'),
     'capacity': fields.Integer(required=True, description='capacity'),
@@ -158,7 +169,7 @@ class PlaceResource(Resource):
         }, 200
 
     @api.doc(security='Bearer')
-    @api.expect(place_model, validate=True)
+    @api.expect(place_model_update, validate=True)
     @api.response(200, 'Place updated successfully')
     @api.response(404, 'Place not found')
     @api.response(400, 'Invalid input data')

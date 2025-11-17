@@ -1,6 +1,6 @@
 from flask_restx import Namespace, Resource, fields
 from app.services import facade
-from flask_jwt_extended import jwt_required, get_jwt
+from flask_jwt_extended import get_jwt_identity, jwt_required, get_jwt
 from app.utils.password_validator import verify_password
 import validators
 
@@ -85,8 +85,14 @@ class UserList(Resource):
     @api.response(200, 'Success')
     @api.doc(description="Get list of users")
     @api.marshal_list_with(user_model)
+    @jwt_required()
     def get(self):
         """get list of users"""
+        claims = get_jwt()
+
+        if not claims.get("is_admin"):
+            return {'error': 'Admin privileges required'}, 403
+
         return facade.get_all_users(), 200
 
 
@@ -156,6 +162,7 @@ class UserUpdateAndFetch(Resource):
 
     @api.response(200, 'Success')
     @api.response(404, 'User not found')
+    @jwt_required()
     def get(self, user_id):
         """
         Get a user by id
@@ -167,7 +174,17 @@ class UserUpdateAndFetch(Resource):
             json: A JSON representation of the user.
             error: An error message if the user is not found.
         """
-        user = facade.get_user(user_id)
+
+        current_user_id = get_jwt_identity()
+        claims = get_jwt()
+
+        if not claims.get('is_admin'):
+            # Ignore the URL param, force access to yourself only.
+            if str(user_id) != str(current_user_id):
+                return {'error': 'Access denied'}, 403
+
+        target_id = user_id if claims.get("is_admin") else current_user_id
+        user = facade.get_user(target_id)
         if not user:
             return {'error': 'User not found'}, 404
 
