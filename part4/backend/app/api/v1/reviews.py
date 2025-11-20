@@ -9,11 +9,10 @@ review_model = api.model('Review', {
     'title': fields.String(required=True, description='Title of the review'),
     'text': fields.String(required=True, description='Text of the review'),
     'rating': fields.Integer(required=True, description='Rating of the place (1-5)'),
-    'user_id': fields.String(required=True, description='ID of the user'),
     'place_id': fields.String(required=True, description='ID of the place')
 })
 
-review_model_update = api.model('Review', {
+review_model_update = api.model('Review_update', {
     'title': fields.String(required=True, description='Title of the review'),
     'text': fields.String(required=True, description='Text of the review'),
     'rating': fields.Integer(required=True, description='Rating of the place (1-5)'),
@@ -34,10 +33,7 @@ class ReviewList(Resource):
         review_data = api.payload
         current_user = get_jwt_identity()
 
-        if current_user != review_data["user_id"]:
-            return {'error': 'Unauthorized action'}, 403
-
-        existing_user = facade.get_user(review_data["user_id"])
+        existing_user = facade.get_user(current_user)
         if not existing_user:
             return {'error': 'User not found'}, 404
 

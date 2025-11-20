@@ -27,7 +27,7 @@ export class FetchPlace {
 		}
 	}
 
-	getId() { return this.data?.id ?? this.id };
+	getId() { return this.data?.id ?? null };
 	getTitle() { return this.data?.title ?? null };
 	getPrice() { return this.data?.price ?? null };
 	getDescription() { return this.data?.description ?? null };

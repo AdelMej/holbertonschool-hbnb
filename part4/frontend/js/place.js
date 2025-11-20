@@ -30,6 +30,7 @@ async function generateDetails() {
 	let place = new FetchPlace(placeId);
 	await place.load();
 	if (place.error) {
+		alert(place.error);
 		window.location.replace("index.html");
 	}
 

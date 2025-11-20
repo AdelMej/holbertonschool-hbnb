@@ -6,7 +6,6 @@ function generateCard(place) {
 	let card = document.createElement("div");
 	card.className = "place-card";
 
-
 	let cardName = document.createElement("h1");
 	cardName.innerText = place.title;
 
@@ -49,7 +48,7 @@ async function viewDetails() {
 
 	// Host
 	const host = document.createElement("p");
-	host.innerText = "Host: " + place.getOwner(place.getOwner().first_name + " " + place.getOwner().last_name);
+	host.innerText = "Host: " + place.getOwner().first_name + " " + place.getOwner().last_name;
 
 	// Amenities
 	const amenities = document.createElement("div");
@@ -131,6 +130,9 @@ document.addEventListener('DOMContentLoaded', () => {
 				placeList.appendChild(card);
 			}
 		})
+		.catch(err => {
+			console.error("Error: ", err);
+		})
 	const values = ["All", 10, 50, 100];
 	let filter = document.getElementById("price-filter");
 
@@ -149,7 +151,7 @@ function filterPlace() {
 
 	for (const place of places) {
 		const price = Number(place.dataset.price);
-		if (price < value) {
+		if (price > value) {
 			place.classList.add("hidden");
 		}
 		else {
