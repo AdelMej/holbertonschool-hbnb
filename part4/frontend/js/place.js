@@ -15,6 +15,16 @@ document.addEventListener('DOMContentLoaded', () => {
 	if (!Cookie.get("token")) {
 		document.getElementById("add-review").classList.add("hidden");
 	}
+
+	// adding redirect to add_reviews
+	let addReview = document.getElementById("review-form");
+
+	addReview.addEventListener("submit", (event) => {
+		event.preventDefault();
+		const fd = new FormData(addReview);
+
+		window.location.replace("add_review.html?place_id=" + placeId + "&text=" + fd.get("review-text"));
+	});
 })
 
 async function generateDetails() {
@@ -72,20 +82,29 @@ async function generateReview(place_id, card) {
 	await placeReviews.load();
 
 	let divReview = document.createElement("div");
+	let reviewSection = document.createElement("h1");
+	reviewSection.innerText = "Reviews"
 
+	divReview.appendChild(reviewSection);
 	for (const review of placeReviews.getAll()) {
-		let reviewTitle = document.createElement("h1");
+		let reviewTitle = document.createElement("h3");
 		reviewTitle.innerText = review.title;
 
 		let reviewText = document.createElement("p");
 		reviewText.innerText = review.text;
 
 		let reviewRating = document.createElement("p");
-		reviewRating.innerText = review.rating;
+		reviewRating.innerText = "rating : " + review.rating;
 
 		divReview.appendChild(reviewTitle);
 		divReview.appendChild(reviewText);
 		divReview.appendChild(reviewRating);
+	}
+	if (placeReviews.getAll().length === 0) {
+		let noReview = document.createElement("p");
+		noReview.innerText = "No review found";
+
+		divReview.appendChild(noReview);
 	}
 	card.appendChild(divReview);
 };

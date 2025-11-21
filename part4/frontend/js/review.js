@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
 	let review = document.getElementById("rating");
 	const params = new URLSearchParams(window.location.search);
 	const placeId = params.get("place_id");
+	const text = params.get("text");
 
 	const validRating = [1, 2, 3, 4, 5];
 
@@ -15,6 +16,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
 		review.appendChild(option);
 	}
+	let textForm = document.getElementById("review");
+	textForm.innerText = text;
 
 	document.getElementById("review-form").addEventListener("submit", (event) => {
 		event.preventDefault();
@@ -47,9 +50,13 @@ async function submitReview(placeId) {
 				Cookie.delete("token");
 				window.location.replace("/login.html")
 			}
+			if (response.status === 400) {
+				const data = await response.json();
+				alert(data.error);
+				window.location.replace("/place.html?id=" + placeId);
+			}
 		}
-		const data = await response.json();
-		console.log(data);
+		window.location.replace("/place.html?id=" + placeId);
 	} catch (err) {
 		console.error("Error: ", err);
 	}

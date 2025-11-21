@@ -9,12 +9,20 @@
 </head>
 
 <body>
+	<header>
+		<img class="logo" alt="logo" src="images/logo.png" height="68" width="142">
+		<nav>
+			<a href="login.html" class="login-button" id="login-link">Login</a>
+			<a href="index.html">Home</a>
+		</nav>
+	</header>
 	<main>
 		<!-- Add something to idfentify the place you're reviewing -->
 		<form id="review-form">
 			<h2>Add a Review</h2>
-			<label for="review">Your Review:</label>
+			<label for="review-title">title:</label>
 			<textarea id="review-title" name="review-title" required></textarea>
+			<label for="review">Your Review:</label>
 			<textarea id="review" name="review" required></textarea>
 			<label for="rating">Rating:</label>
 			<select id="rating" name="rating" required>

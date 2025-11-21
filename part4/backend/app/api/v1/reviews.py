@@ -48,17 +48,18 @@ class ReviewList(Resource):
             if review.user_id == current_user:
                 return {'error': 'You have already reviewed this place'}, 400
 
+        review_data["user_id"] = current_user
         try:
             new_review = facade.create_review(review_data)
         except ValueError:
             return {'error': 'Invalid input data'}, 400
+
         else:
             return {
                 'id': new_review.id,
                 'title': new_review.title,
                 'text': new_review.text,
                 'rating': new_review.rating,
-                'user_id': new_review.user_id,
                 'place_id': new_review.place_id
             }, 201
 
